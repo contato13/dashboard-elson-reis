@@ -83,11 +83,41 @@ header.top{display:flex;flex-wrap:wrap;gap:20px;align-items:flex-end;justify-con
 .subbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px;margin:14px 0 18px}
 .selwrap{position:relative;display:flex;align-items:center;gap:9px}
 .selwrap label{font-size:11.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--txt-dim)}
-select#campSel{appearance:none;background:var(--surface);border:1px solid var(--line);color:var(--txt);
-  font-family:"Sora";font-size:13.5px;font-weight:500;padding:9px 36px 9px 14px;border-radius:11px;cursor:pointer;
-  max-width:340px;text-overflow:ellipsis}
-select#campSel:focus{outline:none;border-color:var(--brand)}
-.selwrap .chev{position:absolute;right:13px;pointer-events:none;color:var(--txt-dim)}
+.selbtn{appearance:none;background:var(--surface);border:1px solid var(--line);color:var(--txt);
+  font-family:"Sora";font-size:13.5px;font-weight:500;padding:9px 14px;border-radius:11px;cursor:pointer;
+  display:inline-flex;align-items:center;gap:10px;min-width:240px;max-width:360px;text-align:left;transition:.15s}
+.selbtn:hover{border-color:color-mix(in srgb,var(--brand) 55%,var(--line))}
+.selbtn .lbl{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.selbtn .count{font-family:"Geist Mono";font-size:11px;background:color-mix(in srgb,var(--brand) 16%,transparent);
+  color:var(--brand);padding:2px 7px;border-radius:6px;flex:0 0 auto}
+.selbtn .chev{transition:transform .2s;color:var(--txt-dim);flex:0 0 auto}
+.selbtn[aria-expanded="true"]{border-color:var(--brand)}
+.selbtn[aria-expanded="true"] .chev{transform:rotate(180deg)}
+.selpanel{position:absolute;top:calc(100% + 6px);left:0;z-index:30;
+  background:var(--surface);border:1px solid var(--line);border-radius:13px;
+  width:340px;max-width:calc(100vw - 32px);box-shadow:0 18px 50px -12px rgba(0,0,0,.55);
+  display:none;flex-direction:column;overflow:hidden}
+.selpanel.open{display:flex;animation:popin .14s ease-out}
+@keyframes popin{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+.selpanel .ptop{display:flex;gap:8px;padding:11px 12px;border-bottom:1px solid var(--line-soft);align-items:center;justify-content:space-between}
+.selpanel .ptop .meta{font-size:11.5px;color:var(--txt-dim)}
+.selpanel .ptop .acts{display:flex;gap:6px}
+.selpanel .acts button{background:none;border:1px solid var(--line);color:var(--txt-dim);
+  font-family:"Sora";font-size:11.5px;padding:4px 10px;border-radius:7px;cursor:pointer;transition:.15s}
+.selpanel .acts button:hover{color:var(--brand);border-color:var(--brand)}
+.selpanel .plist{max-height:320px;overflow-y:auto;padding:6px}
+.selpanel .plist::-webkit-scrollbar{width:8px}
+.selpanel .plist::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+.selitem{display:flex;align-items:center;gap:10px;padding:9px 11px;border-radius:8px;cursor:pointer;
+  font-size:13px;color:var(--txt);transition:background .12s;user-select:none}
+.selitem:hover{background:var(--surface-2)}
+.selitem input{appearance:none;width:16px;height:16px;border:1.5px solid var(--line);border-radius:5px;
+  cursor:pointer;display:grid;place-items:center;flex:0 0 auto;transition:.15s;background:var(--bg-2)}
+.selitem input:checked{background:var(--brand);border-color:var(--brand)}
+.selitem input:checked::after{content:"";width:9px;height:9px;
+  background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M3.5 8.5l3 3 6-7' fill='none' stroke='%230d0d0d' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'/></svg>") center/contain no-repeat}
+.selitem .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.selitem .nrec{font-family:"Geist Mono";font-size:10.5px;color:var(--txt-faint);flex:0 0 auto}
 .cmpinfo{font-size:12.5px;color:var(--txt-faint)}
 .cmpinfo b{color:var(--txt-dim);font-weight:500}
 .cmpinfo .now{color:var(--brand)}
@@ -184,10 +214,23 @@ footer .d{color:var(--brand)}
   </header>
 
   <div class="subbar">
-    <div class="selwrap">
-      <label for="campSel">Campanha</label>
-      <select id="campSel"><option value="__all__">Todas as campanhas</option></select>
-      <span class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+    <div class="selwrap" id="campWrap">
+      <label>Campanhas</label>
+      <button class="selbtn" id="campBtn" aria-expanded="false" aria-haspopup="listbox">
+        <span class="lbl" id="campBtnLbl">Todas as campanhas</span>
+        <span class="count" id="campBtnCount">0</span>
+        <span class="chev"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="m6 9 6 6 6-6"/></svg></span>
+      </button>
+      <div class="selpanel" id="campPanel" role="listbox" aria-multiselectable="true">
+        <div class="ptop">
+          <span class="meta" id="campPanelMeta">0 de 0 selecionadas</span>
+          <div class="acts">
+            <button type="button" data-act="all">Todas</button>
+            <button type="button" data-act="none">Limpar</button>
+          </div>
+        </div>
+        <div class="plist" id="campList"></div>
+      </div>
     </div>
     <div class="cmpinfo" id="cmpInfo"></div>
   </div>
@@ -258,7 +301,7 @@ function parseDate(s){if(!s)return null;s=String(s).trim();
 const dShort=d=>d.toLocaleDateString("pt-BR",{day:"2-digit",month:"2-digit"});
 
 /* ---------- estado ---------- */
-let RAW=[], RANGE=7, CAMP="__all__", sortKey="_date", sortDir=-1, charts={}, isDemo=false;
+let RAW=[], RANGE=7, CAMPS=new Set(), ALL_CAMPS=[], sortKey="_date", sortDir=-1, charts={}, isDemo=false;
 const COLS=["Data","Campanha","Conjunto de Anúncios","Anúncio","Valor Investido","Impressões",
             "Cliques no Link","Custo por Clique","CTR","Resultado","Custo por Resultado","Hook"];
 
@@ -291,15 +334,40 @@ function showBanner(html){$("#bannerSlot").innerHTML=`<div class="banner warn"><
 function clearBanner(){$("#bannerSlot").innerHTML="";}
 
 /* ---------- seletor de campanha ---------- */
+/* ---------- seletor de campanhas (multi) ---------- */
 function buildCampaigns(){
-  const set=[...new Set(RAW.map(r=>r["Campanha"]).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"pt-BR"));
-  const sel=$("#campSel"); const keep=CAMP;
-  sel.innerHTML=`<option value="__all__">Todas as campanhas (${set.length})</option>`+
-    set.map(c=>`<option value="${c.replace(/"/g,'&quot;')}">${c}</option>`).join("");
-  if(keep!=="__all__"&&!set.includes(keep)) CAMP="__all__";
-  sel.value=CAMP;
+  // conta registros por campanha (útil pra ver volume)
+  const counts=new Map();
+  RAW.forEach(r=>{const c=r["Campanha"]; if(c) counts.set(c,(counts.get(c)||0)+1);});
+  ALL_CAMPS=[...counts.keys()].sort((a,b)=>a.localeCompare(b,"pt-BR"));
+  // primeira execução: marca todas; nas seguintes preserva escolhas, mas inclui campanhas novas
+  const previouslySet=CAMPS.size>0;
+  if(!previouslySet){ CAMPS=new Set(ALL_CAMPS); }
+  else{
+    // remove campanhas que sumiram da planilha
+    [...CAMPS].forEach(c=>{if(!ALL_CAMPS.includes(c)) CAMPS.delete(c);});
+    // mantém escolhas; não adiciona campanhas novas automaticamente
+  }
+  // monta a lista
+  $("#campList").innerHTML=ALL_CAMPS.map(c=>{
+    const safe=c.replace(/"/g,"&quot;"), checked=CAMPS.has(c)?"checked":"";
+    return `<label class="selitem"><input type="checkbox" data-c="${safe}" ${checked}>
+      <span class="name">${c}</span><span class="nrec">${counts.get(c)} reg</span></label>`;
+  }).join("");
+  updateCampBtn();
 }
-const campRows=()=>CAMP==="__all__"?RAW:RAW.filter(r=>r["Campanha"]===CAMP);
+function updateCampBtn(){
+  const total=ALL_CAMPS.length, sel=CAMPS.size;
+  let lbl;
+  if(sel===total) lbl="Todas as campanhas";
+  else if(sel===0) lbl="Nenhuma campanha";
+  else if(sel===1) lbl=[...CAMPS][0];
+  else lbl=`${sel} campanhas`;
+  $("#campBtnLbl").textContent=lbl;
+  $("#campBtnCount").textContent=`${sel}/${total}`;
+  $("#campPanelMeta").textContent=`${sel} de ${total} selecionada${total===1?"":"s"}`;
+}
+const campRows=()=>CAMPS.size===0?[]:RAW.filter(r=>CAMPS.has(r["Campanha"]));
 
 /* ---------- janelas de período (atual / anterior) ---------- */
 function windowRows(offset){           // offset 0 = atual, 1 = anterior
@@ -336,6 +404,7 @@ function render(){
 }
 function rng(a,b){return a&&b?(a.getTime()===b.getTime()?dShort(a):dShort(a)+"–"+dShort(b)):"—";}
 function renderCmpInfo(cur,prev){
+  if(CAMPS.size===0){$("#cmpInfo").innerHTML="<span style='color:var(--brand)'>● nenhuma campanha selecionada</span>";return;}
   if(RANGE===0||!prev.rows){$("#cmpInfo").innerHTML="período completo · <b>sem comparativo</b>";return;}
   $("#cmpInfo").innerHTML=`<span class="now">${rng(cur.start,cur.end)}</span> &nbsp;vs&nbsp; <b>${rng(prev.start,prev.end)}</b> <span style="opacity:.7">(período anterior)</span>`;
 }
@@ -437,7 +506,35 @@ function renderTable(rows){
 $("#rangeSeg").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;
   $("#rangeSeg").querySelectorAll("button").forEach(x=>x.classList.remove("active"));
   b.classList.add("active");RANGE=+b.dataset.r;render();});
-$("#campSel").addEventListener("change",e=>{CAMP=e.target.value;render();});
+// abre/fecha painel
+$("#campBtn").addEventListener("click",e=>{
+  e.stopPropagation();
+  const open=$("#campPanel").classList.toggle("open");
+  $("#campBtn").setAttribute("aria-expanded",open?"true":"false");
+});
+// fecha ao clicar fora
+document.addEventListener("click",e=>{
+  if(!e.target.closest("#campWrap")){
+    $("#campPanel").classList.remove("open");
+    $("#campBtn").setAttribute("aria-expanded","false");
+  }
+});
+// fecha com ESC
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){$("#campPanel").classList.remove("open");$("#campBtn").setAttribute("aria-expanded","false");}});
+// toggle de cada checkbox
+$("#campList").addEventListener("change",e=>{
+  const cb=e.target.closest("input[type=checkbox]"); if(!cb) return;
+  const name=cb.dataset.c;
+  if(cb.checked) CAMPS.add(name); else CAMPS.delete(name);
+  updateCampBtn(); render();
+});
+// ações "Todas" / "Limpar"
+$("#campPanel").querySelector(".acts").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-act]"); if(!b) return;
+  if(b.dataset.act==="all") CAMPS=new Set(ALL_CAMPS); else CAMPS=new Set();
+  $("#campList").querySelectorAll("input[type=checkbox]").forEach(cb=>{cb.checked=CAMPS.has(cb.dataset.c);});
+  updateCampBtn(); render();
+});
 $("#refreshBtn").addEventListener("click",loadData);
 $("#search").addEventListener("input",()=>renderTable(windowRows(0).rows||[]));
 document.addEventListener("click",e=>{const th=e.target.closest("th[data-k]");if(!th)return;
@@ -447,7 +544,8 @@ document.addEventListener("click",e=>{const th=e.target.closest("th[data-k]");if
 /* ---------- dados de exemplo ---------- */
 const DEMO=(()=>{const out=[];const base=new Date();base.setDate(base.getDate()-1);
   const camps=[{c:"[MQA] Captação Contábil",ads:["Vídeo Institucional","Carrossel Serviços","Reels Depoimento"]},
-               {c:"[MQA] Abertura de Empresa",ads:["Imagem Promo MEI","Vídeo Abertura Grátis"]}];
+               {c:"[MQA] Aposentadoria PJ",ads:["Imagem Promo","Vídeo Abertura Grátis"]},
+               {c:"[MQA] Ebook MEI 2026",ads:["Capa Ebook","Reels Ebook","Vídeo Depoimento Ebook"]}];
   for(let i=15;i>=0;i--){const d=new Date(base);d.setDate(d.getDate()-i);
     const dd=String(d.getDate()).padStart(2,"0"),mm=String(d.getMonth()+1).padStart(2,"0");
     camps.forEach((cp,ci)=>cp.ads.forEach((a,j)=>{
